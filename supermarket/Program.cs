@@ -19,21 +19,40 @@ namespace supermarket
 class Supermarket
 {
     private BoxOffice _boxOffice = new BoxOffice();
-    private Customer[] _customers = new Customer[10];
+    private Queue<Customer> _customers = new Queue<Customer>();
+    private List<Product> _products = new List<Product>();
 
     public Supermarket()
     {
-        for (int i = 0; i < _customers.Length; i++)
+        int numberOfProductsSameType = 10;
+
+        for (int i = 0; i < numberOfProductsSameType; i++)
         {
-            _customers[i] = new Customer();
+            _products.Add(new Butter());
+            _products.Add(new Burger());
+            _products.Add(new Beer());
+            _products.Add(new Beef());
+            _products.Add(new Sausage());
+            _products.Add(new Salad());
+            _products.Add(new Vodka());
+        }
+
+        int numberCustomer = 10;
+
+        for (int i = 0; i < numberCustomer; i++)
+        {
+            Customer customer = new Customer();
+            customer.CollectProduct(_products);
+
+            _customers.Enqueue(customer);
         }
     }
 
     public void Start()
     {
-        foreach (Customer customer in _customers)
+        while(_customers.Count > 0)
         {
-            _boxOffice.ServeNextCustomer(customer);
+            _boxOffice.ServeNextCustomer(_customers.Dequeue());
         }
     }
 }
@@ -41,28 +60,26 @@ class Supermarket
 class BoxOffice
 {
     private int _money = 0;
-    private int _costOfProductsClient = 0;
     private int _customerCount = 0;
-    private bool _isCustomerServed;
 
     public void ServeNextCustomer(Customer customer)
     {
-        _isCustomerServed = false;
+        bool isCustomerServed = false;
         _customerCount++;
 
         Console.WriteLine($"Клиент №{_customerCount}");
 
-        while (_isCustomerServed == false)
+        while (isCustomerServed == false)
         {
-            _costOfProductsClient = customer.GetCostOfProductsInBasket();
-            
-            if (customer.WillThereBeEnoughMoney(_costOfProductsClient))
+            int costOfProductsClient = customer.GetCostOfProductsInBasket();
+
+            if (customer.IsEnoughMoney(costOfProductsClient))
             {
-                _money += customer.PayProducts(_costOfProductsClient);
+                _money += customer.PayProducts(costOfProductsClient);
 
-                Console.WriteLine($"Покупка на {_costOfProductsClient} оплачена. В кассе {_money}руб.");
+                Console.WriteLine($"Покупка на {costOfProductsClient} оплачена. В кассе {_money}руб.");
 
-                _isCustomerServed = true;
+                isCustomerServed = true;
             }
             else
             {
@@ -79,7 +96,7 @@ class Customer
     private Basket _basket = new Basket();
 
     private int _money;
-    
+
     public Customer()
     {
         int minimumMoney = 300;
@@ -88,16 +105,36 @@ class Customer
         _money = _random.Next(minimumMoney, maximumMoney);
     }
 
-    public bool WillThereBeEnoughMoney(int price)
+    public void CollectProduct(List<Product> products)
+    {
+        int minimumIndexProduct = 1;
+        int maximumIndexProduct = products.Count;
+        int numberPlaceInBasket = 5;
+
+        for (int i = 0; i < numberPlaceInBasket; i++)
+        {
+            int indexProduct = _random.Next(minimumIndexProduct, maximumIndexProduct);
+
+            Product product = products[indexProduct];
+
+            _basket.AddProduct(product);
+
+            products.RemoveAt(indexProduct);
+        }
+    }
+
+    public bool IsEnoughMoney(int price)
     {
         return _money >= price;
     }
 
     public int PayProducts(int price)
     {
-        _money -= price;
+        int moneyOfProducts = price;
 
-        return price;
+        _money -= moneyOfProducts;
+
+        return moneyOfProducts;
     }
 
     public int GetCostOfProductsInBasket()
@@ -109,7 +146,7 @@ class Customer
 
     public void EjectRandomProduct()
     {
-        _basket.EjectOneProduct();
+        _basket.EjectProduct();
     }
 }
 
@@ -118,12 +155,7 @@ class Basket
     private List<Product> _products = new List<Product>();
     private static Random _random = new Random();
 
-    public Basket()
-    {
-        FillWithProduct();
-    }
-
-    public void EjectOneProduct()
+    public void EjectProduct()
     {
         int minimumIndexProduct = 0;
         int indexProductToDelete = _random.Next(minimumIndexProduct, _products.Count);
@@ -145,54 +177,9 @@ class Basket
         return costOfProducts;
     }
 
-    private void FillWithProduct()
+    public void AddProduct(Product product)
     {
-        int minimumNumberProduct = 3;
-        int maximumNumberProduct = 7;
-
-        int randomProductCount = _random.Next(minimumNumberProduct, maximumNumberProduct);
-        int randomProductNumber;
-
-        for (int i = 0; i < randomProductCount; i++)
-        {
-            int minimumNumber = 0;
-            int maximumNumber = 10;
-            randomProductNumber = _random.Next(minimumNumber, maximumNumber);
-
-            switch (randomProductNumber)
-            {
-                case 0:
-                    _products.Add(new Bread());
-                    break;
-                case 1:
-                    _products.Add(new Butter());
-                    break;
-                case 2:
-                    _products.Add(new lemon());
-                    break;
-                case 3:
-                    _products.Add(new Burger());
-                    break;
-                case 4:
-                    _products.Add(new Beer());
-                    break;
-                case 5:
-                    _products.Add(new Salad());
-                    break;
-                case 6:
-                    _products.Add(new Vodka());
-                    break;
-                case 7:
-                    _products.Add(new Beef());
-                    break;
-                case 8:
-                    _products.Add(new Sausage());
-                    break;
-                case 9:
-                    _products.Add(new ToiletPaper());
-                    break;
-            }
-        }
+        _products.Add(product);
     }
 }
 
@@ -202,30 +189,12 @@ abstract class Product
     public int Price { get; protected set; }
 }
 
-class Bread : Product
-{
-    public Bread()
-    {
-        Name = "Хлеб";
-        Price = 30;
-    }
-}
-
 class Butter : Product
 {
     public Butter()
     {
         Name = "Сливочное масло";
         Price = 90;
-    }
-}
-
-class lemon : Product
-{
-    public lemon()
-    {
-        Name = "Лимон";
-        Price = 15;
     }
 }
 
@@ -280,14 +249,5 @@ class Sausage : Product
     {
         Name = "Сосиски";
         Price = 110;
-    }
-}
-
-class ToiletPaper : Product
-{
-    public ToiletPaper()
-    {
-        Name = "Туалетная бумага";
-        Price = 95;
     }
 }
