@@ -107,12 +107,12 @@ class Customer
 
     public void CollectProduct(List<Product> products)
     {
-        int minimumIndexProduct = 1;
-        int maximumIndexProduct = products.Count;
+        int minimumIndexProduct = 0;
         int numberPlaceInBasket = 5;
 
         for (int i = 0; i < numberPlaceInBasket; i++)
         {
+            int maximumIndexProduct = products.Count;
             int indexProduct = _random.Next(minimumIndexProduct, maximumIndexProduct);
 
             Product product = products[indexProduct];
