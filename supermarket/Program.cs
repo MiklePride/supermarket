@@ -9,7 +9,7 @@ namespace supermarket
         {
             Supermarket supermarket = new Supermarket();
 
-            supermarket.Start();
+            supermarket.Work();
 
             Console.ReadLine();
         }
@@ -28,13 +28,13 @@ class Supermarket
 
         for (int i = 0; i < numberOfProductsSameType; i++)
         {
-            _products.Add(new Butter());
-            _products.Add(new Burger());
-            _products.Add(new Beer());
-            _products.Add(new Beef());
-            _products.Add(new Sausage());
-            _products.Add(new Salad());
-            _products.Add(new Vodka());
+            _products.Add(new Product("Масло", 92));
+            _products.Add(new Product("Пиво", 80));
+            _products.Add(new Product("Мясо", 200));
+            _products.Add(new Product("Молоко", 153));
+            _products.Add(new Product("Приправа", 48));
+            _products.Add(new Product("Яйца", 100));
+            _products.Add(new Product("Квас", 85));
         }
 
         int numberCustomer = 10;
@@ -42,15 +42,15 @@ class Supermarket
         for (int i = 0; i < numberCustomer; i++)
         {
             Customer customer = new Customer();
-            customer.CollectProduct(_products);
+            customer.CollectProducts(_products);
 
             _customers.Enqueue(customer);
         }
     }
 
-    public void Start()
+    public void Work()
     {
-        while(_customers.Count > 0)
+        while (_customers.Count > 0)
         {
             _boxOffice.ServeNextCustomer(_customers.Dequeue());
         }
@@ -105,7 +105,7 @@ class Customer
         _money = _random.Next(minimumMoney, maximumMoney);
     }
 
-    public void CollectProduct(List<Product> products)
+    public void CollectProducts(List<Product> products)
     {
         int minimumIndexProduct = 0;
         int numberPlaceInBasket = 5;
@@ -115,11 +115,7 @@ class Customer
             int maximumIndexProduct = products.Count;
             int indexProduct = _random.Next(minimumIndexProduct, maximumIndexProduct);
 
-            Product product = products[indexProduct];
-
-            _basket.AddProduct(product);
-
-            products.RemoveAt(indexProduct);
+            _basket.AddProduct(products[i].GetClone());
         }
     }
 
@@ -139,9 +135,7 @@ class Customer
 
     public int GetCostOfProductsInBasket()
     {
-        int costOfProduct = _basket.GetCostOfProducts();
-
-        return costOfProduct;
+        return _basket.GetCostOfProducts();
     }
 
     public void EjectRandomProduct()
@@ -183,71 +177,19 @@ class Basket
     }
 }
 
-abstract class Product
+class Product
 {
-    public string Name { get; protected set; }
-    public int Price { get; protected set; }
-}
+    public string Name { get; private set; }
+    public int Price { get; private set; }
 
-class Butter : Product
-{
-    public Butter()
+    public Product(string name, int price)
     {
-        Name = "Сливочное масло";
-        Price = 90;
+        Name = name;
+        Price = price;
     }
-}
 
-class Burger : Product
-{
-    public Burger()
+    public Product GetClone()
     {
-        Name = "Бургер";
-        Price = 100;
-    }
-}
-
-class Beer : Product
-{
-    public Beer()
-    {
-        Name = "Пиво";
-        Price = 120;
-    }
-}
-
-class Salad : Product
-{
-    public Salad()
-    {
-        Name = "Салат";
-        Price = 80;
-    }
-}
-
-class Vodka : Product
-{
-    public Vodka()
-    {
-        Name = "Водка";
-        Price = 200;
-    }
-}
-
-class Beef : Product
-{
-    public Beef()
-    {
-        Name = "Говядина";
-        Price = 250;
-    }
-}
-
-class Sausage : Product
-{
-    public Sausage()
-    {
-        Name = "Сосиски";
-        Price = 110;
+        return new Product(Name, Price);
     }
 }
