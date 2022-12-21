@@ -18,31 +18,35 @@ namespace supermarket
 
 class Supermarket
 {
+    private static Random _random = new Random();
     private BoxOffice _boxOffice = new BoxOffice();
     private Queue<Customer> _customers = new Queue<Customer>();
     private List<Product> _products = new List<Product>();
 
     public Supermarket()
     {
-        int numberOfProductsSameType = 10;
-
-        for (int i = 0; i < numberOfProductsSameType; i++)
-        {
-            _products.Add(new Product("Масло", 92));
-            _products.Add(new Product("Пиво", 80));
-            _products.Add(new Product("Мясо", 200));
-            _products.Add(new Product("Молоко", 153));
-            _products.Add(new Product("Приправа", 48));
-            _products.Add(new Product("Яйца", 100));
-            _products.Add(new Product("Квас", 85));
-        }
+        _products.Add(new Product("Масло", 92));
+        _products.Add(new Product("Пиво", 80));
+        _products.Add(new Product("Мясо", 200));
+        _products.Add(new Product("Молоко", 153));
+        _products.Add(new Product("Приправа", 48));
+        _products.Add(new Product("Яйца", 100));
+        _products.Add(new Product("Квас", 85));
 
         int numberCustomer = 10;
 
         for (int i = 0; i < numberCustomer; i++)
         {
+            
             Customer customer = new Customer();
-            customer.CollectProducts(_products);
+            int minimumProducts = 3;
+            int maximumProducts = 7;
+            int productCount = _random.Next(minimumProducts, maximumProducts);
+
+            for (int j = 0; j < productCount; j++)
+            {
+                customer.CollectProduct(GetRandomProduct());
+            }
 
             _customers.Enqueue(customer);
         }
@@ -54,6 +58,15 @@ class Supermarket
         {
             _boxOffice.ServeNextCustomer(_customers.Dequeue());
         }
+    }
+
+    private Product GetRandomProduct()
+    {
+        int maximumIndex = _products.Count;
+
+        int indexProduct = _random.Next(maximumIndex);
+
+        return _products[indexProduct];
     }
 }
 
@@ -94,7 +107,6 @@ class Customer
 {
     private static Random _random = new Random();
     private Basket _basket = new Basket();
-
     private int _money;
 
     public Customer()
@@ -105,18 +117,9 @@ class Customer
         _money = _random.Next(minimumMoney, maximumMoney);
     }
 
-    public void CollectProducts(List<Product> products)
+    public void CollectProduct(Product product)
     {
-        int minimumIndexProduct = 0;
-        int numberPlaceInBasket = 5;
-
-        for (int i = 0; i < numberPlaceInBasket; i++)
-        {
-            int maximumIndexProduct = products.Count;
-            int indexProduct = _random.Next(minimumIndexProduct, maximumIndexProduct);
-
-            _basket.AddProduct(products[i].GetClone());
-        }
+        _basket.AddProduct(product.GetClone());
     }
 
     public bool IsEnoughMoney(int price)
@@ -146,8 +149,8 @@ class Customer
 
 class Basket
 {
-    private List<Product> _products = new List<Product>();
     private static Random _random = new Random();
+    private List<Product> _products = new List<Product>();
 
     public void EjectProduct()
     {
