@@ -37,7 +37,6 @@ class Supermarket
 
         for (int i = 0; i < numberCustomer; i++)
         {
-            
             Customer customer = new Customer();
             int minimumProducts = 3;
             int maximumProducts = 7;
