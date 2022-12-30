@@ -65,7 +65,7 @@ class Supermarket
 
         int indexProduct = _random.Next(maximumIndex);
 
-        return _products[indexProduct];
+        return _products[indexProduct].GetClone();
     }
 }
 
@@ -118,7 +118,7 @@ class Customer
 
     public void CollectProduct(Product product)
     {
-        _basket.AddProduct(product.GetClone());
+        _basket.AddProduct(product);
     }
 
     public bool IsEnoughMoney(int price)
